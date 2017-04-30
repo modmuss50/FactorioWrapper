@@ -59,6 +59,8 @@ func LoadDiscord(token string) {
 		log.Fatal(err)
 	}
 	RXUserID = r2
+
+	DiscordClient.UpdateStatus(0, "Factorio")
 }
 
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
