@@ -122,6 +122,6 @@ func readInput(cmd *exec.Cmd) {
 func getExec(dir string) *exec.Cmd {
 	fullDir := "." + dir + "/bin/x64/factorio"
 	fmt.Println(fullDir)
-	factorioExec := exec.Command(fullDir, "--start-server", utils.GetRunPath()+dir+"/saves/" + config.FactorioSaveFileName)
+	factorioExec := exec.Command(fullDir, "--start-server", "." + dir + "/saves/" + config.FactorioSaveFileName)
 	return factorioExec
 }
