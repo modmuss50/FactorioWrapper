@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 )
 
 //ReadStringFromFile reads a string from a file
@@ -61,4 +62,13 @@ func ReadLinesFromFile(fileName string) []string {
 
 func MakeDir(fileName string) {
 	os.MkdirAll(fileName,os.ModePerm)
+}
+
+func GetRunPath() string {
+	ex, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	exPath := path.Dir(ex)
+	return exPath
 }
