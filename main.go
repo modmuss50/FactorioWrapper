@@ -11,6 +11,11 @@ import (
 	"log"
 	"strings"
 	"syscall"
+
+)
+
+var (
+	TextInput io.WriteCloser
 )
 
 func main() {
@@ -20,6 +25,7 @@ func main() {
 	version := "0.15.4"
 	tarBal := fmt.Sprintf("%vfactorio_headless_x64_%v.tar.xz", dataDir, version)
 	gameDir := dataDir
+	tokenFile := dataDir + "token.txt"
 	proccessDir := "/FactorioWrapper/data/factorio"
 
 	if !utils.FileExists(dataDir) || ! utils.FileExists(tarBal) {
@@ -33,6 +39,8 @@ func main() {
 
 	factorioProcess := getExec(proccessDir)
 	factorioInput, err := factorioProcess.StdinPipe()
+	TextInput = factorioInput
+	utils.TextInput = factorioInput;
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,19 +50,36 @@ func main() {
 	scanner := bufio.NewScanner(factorioOutput)
 	go func() {
 		for scanner.Scan() {
-			if strings.Contains(scanner.Text(), "ping"){
+			text := scanner.Text()
+			if strings.Contains(text, "ping"){
 				io.WriteString(factorioInput, "Pong!\n")
 			}
-			if strings.Contains(scanner.Text(), "Goodbye"){
+			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)"){
+				utils.LoadDiscord(tokenFile)
+				utils.SendStringToDiscord("Server started on factorio version " + version)
+			}
+			if strings.Contains(text, "[JOIN]"){
+				utils.SendStringToDiscord(text[26:])
+			}
+			if strings.Contains(text, "[CHAT]"){
+				if !strings.Contains(text, " [CHAT] <server>:"){
+					utils.SendStringToDiscord(text[26:])
+				}
+			}
+			if strings.Contains(text, "[LEAVE]"){
+				utils.SendStringToDiscord(text[27:])
+			}
+			if strings.Contains(text, "Goodbye"){
+				utils.SendStringToDiscord("Server closed")
+				utils.DiscordClient.Close()
 				os.Exit(0)
 			}
-			fmt.Printf("\t > %s\n", scanner.Text())
+			fmt.Printf("\t > %s\n", text)
 		}
 	}()
 
 
 	factorioProcess.Start()
-	//factorioProcess.Wait()
 
 	ticker := time.NewTicker(time.Second * 10)
 	go func() {
@@ -63,7 +88,6 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Hello")
 	readInput(factorioProcess)
 
 }
