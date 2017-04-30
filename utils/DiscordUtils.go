@@ -95,6 +95,6 @@ func escapeMentions(message string) string {
 			str = strings.Replace(str, match, username, -1)
 		}
 	}
-	strings.Replace(str, "@", "", -1)
+	str = strings.Replace(str, "@", "", -1)
 	return str
 }
