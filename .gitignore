@@ -1,0 +1,7 @@
+# Ignore everything
+/*
+
+!/main.go
+!/.gitignore
+!/README.md
+!/utils/
