@@ -6,7 +6,6 @@ import (
 	"github.com/modmuss50/FactorioWrapper/config"
 	"os"
 	"os/exec"
-	"time"
 	"bufio"
 	"io"
 	"log"
@@ -44,6 +43,7 @@ func main() {
 
 	fmt.Println("Starting game...")
 	factorioProcess := getExec(proccessDir)
+	fmt.Println("Getting input for game")
 	factorioInput, err := factorioProcess.StdinPipe()
 	utils.TextInput = factorioInput
 	if err != nil {
@@ -51,6 +51,7 @@ func main() {
 	}
 	defer factorioInput.Close()
 	factorioOutput, _ := factorioProcess.StdoutPipe()
+
 
 	scanner := bufio.NewScanner(factorioOutput)
 	go func() {
@@ -83,14 +84,15 @@ func main() {
 		}
 	}()
 
+	fmt.Println("Launching process")
 	factorioProcess.Start()
 
-	ticker := time.NewTicker(time.Second * 10)
-	go func() {
-		for range ticker.C {
-			//io.WriteString(factorioInput, "hello is this working?\n")
-		}
-	}()
+	//ticker := time.NewTicker(time.Second * 10)
+	//go func() {
+	//	for range ticker.C {
+	//		//io.WriteString(factorioInput, "hello is this working?\n")
+	//	}
+	//}()
 
 	readInput(factorioProcess)
 
