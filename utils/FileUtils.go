@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
+	"errors"
 )
 
 //ReadStringFromFile reads a string from a file
@@ -71,4 +73,26 @@ func GetRunPath() string {
 	}
 	exPath := path.Dir(ex)
 	return exPath
+}
+
+func DeleteDir(dir string) error {
+	if ! FileExists(dir){
+		return errors.New("File not found")
+	}
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
