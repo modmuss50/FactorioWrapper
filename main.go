@@ -17,9 +17,15 @@ import (
 func main() {
 	fmt.Println("Starting wrapper")
 
+	dataDir := "./data/"
+	if !utils.FileExists(dataDir){
+		utils.MakeDir(dataDir)
+	}
+
+
 	config.LoadConfig()
 
-	dataDir := "./data/"
+
 	version := config.FactorioVersion
 	tarBal := fmt.Sprintf("%vfactorio_headless_x64_%v.tar.xz", dataDir, version)
 	gameDir := dataDir
