@@ -1,0 +1,22 @@
+plugins {
+    id 'org.echocat.golang' version '0.1.15'
+}
+
+group 'github.com/modmuss50/FactorioWrapper'
+
+version = "1.0.0"
+
+def ENV = System.getenv()
+if (ENV.BUILD_NUMBER) {
+    version = version + "." + "${System.getenv().BUILD_NUMBER}"
+}
+
+golang {
+    dependencies {
+        build 'github.com/bwmarrin/discordgo'
+        build 'github.com/spf13/viper'
+        build 'github.com/cavaliercoder/grab'
+        build 'github.com/mholt/archiver'
+    }
+    platforms = System.getProperty("platforms", "linux-amd64")
+}
