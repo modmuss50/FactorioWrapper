@@ -85,7 +85,7 @@ func main() {
 	}()
 
 	fmt.Println("Launching process")
-	factorioProcess.Start()
+	factorioProcess.Run()
 
 	//ticker := time.NewTicker(time.Second * 10)
 	//go func() {
