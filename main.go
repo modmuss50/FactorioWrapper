@@ -22,7 +22,7 @@ func main() {
 		utils.MakeDir(dataDir)
 	}
 
-
+	fmt.Println("Loading config")
 	config.LoadConfig()
 
 
@@ -31,6 +31,7 @@ func main() {
 	gameDir := dataDir
 	proccessDir := "/FactorioWrapper/data/factorio"
 
+
 	if !utils.FileExists(dataDir) || ! utils.FileExists(tarBal) {
 		utils.MakeDir(dataDir)
 		if !utils.DownloadURL(fmt.Sprintf("https://www.factorio.com/get-download/%v/headless/linux64", version), tarBal) {
@@ -38,8 +39,10 @@ func main() {
 			os.Exit(1)
 		}
 		utils.ExtractTarXZ(tarBal, gameDir)
+		fmt.Println("Done.")
 	}
 
+	fmt.Println("Starting game...")
 	factorioProcess := getExec(proccessDir)
 	factorioInput, err := factorioProcess.StdinPipe()
 	utils.TextInput = factorioInput
