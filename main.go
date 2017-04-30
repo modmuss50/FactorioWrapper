@@ -77,6 +77,7 @@ func main() {
 			fmt.Printf("\t > %s\n", text)
 			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)") {
 				utils.LoadDiscord(config.DiscordToken)
+				utils.ChannelID = config.DiscordChannel
 				utils.SendStringToDiscord("Server started on factorio version " + version, config.DiscordChannel)
 			}
 			if strings.Contains(text, "changing state from(CreatingGame) to(InitializationFailed)") || strings.Contains(text, "Couldn't acquire exclusive lock for") {

@@ -72,7 +72,14 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	if strings.HasPrefix(m.Content, "!restart"){
+		if DoesUserHaveRole(m.ChannelID, m.Author.ID, "Bot Admin") {
+			fmt.Println("Server can be restarted here")
+		}
+	}
+
 	io.WriteString(TextInput, "<" + m.Author.Username + "> " + m.Content + "\n")
+
 }
 
 func SendStringToDiscord(message string, channelID string){
@@ -100,3 +107,37 @@ func escapeMentions(message string) string {
 	str = strings.Replace(str, "@", "", -1)
 	return str
 }
+
+func DoesUserHaveRole(channelID string, authorID string, roleToFind string) bool {
+	channel, err := DiscordClient.Channel(channelID)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+	guild, err := DiscordClient.Guild(channel.GuildID)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+	target, err := DiscordClient.GuildMember(guild.ID, authorID)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+	var roles []string
+	for _, grole := range guild.Roles {
+		for _, urole := range target.Roles {
+			if urole == grole.ID {
+				roles = append(roles, grole.Name)
+			}
+		}
+	}
+
+	for _,role := range  roles {
+		if role == roleToFind {
+			return true
+		}
+	}
+	return false
+}
+

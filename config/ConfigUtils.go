@@ -23,6 +23,7 @@ save = "world.zip"
 [discord]
 token = "<Discord Bot Token>"
 channelID = "<Discord Channel ID>"
+commanderRole = "Bot Admin"
 
 `)
 
@@ -41,6 +42,7 @@ func LoadConfig() {
 		FactorioSaveFileName = viper.GetString("factorio.save")
 		DiscordToken = viper.GetString("discord.token")
 		DiscordChannel = viper.GetString("discord.channelID")
+		DiscordChannel = viper.GetString("discord.commanderRole")
 
 	}
 }
