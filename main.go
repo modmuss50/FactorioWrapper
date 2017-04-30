@@ -28,7 +28,7 @@ func main() {
 	version := config.FactorioVersion
 	tarBal := fmt.Sprintf("%vfactorio_headless_x64_%v.tar.xz", dataDir, version)
 	gameDir := dataDir
-	proccessDir := "/FactorioWrapper/data/factorio"
+	proccessDir := "/data/factorio"
 
 
 	if !utils.FileExists(dataDir) || ! utils.FileExists(tarBal) {
@@ -85,7 +85,11 @@ func main() {
 	}()
 
 	fmt.Println("Launching process")
-	factorioProcess.Run()
+	er := factorioProcess.Run()
+	if er != nil {
+		log.Fatal(er)
+		os.Exit(1)
+	}
 
 	//ticker := time.NewTicker(time.Second * 10)
 	//go func() {
@@ -116,6 +120,8 @@ func readInput(cmd *exec.Cmd) {
 }
 
 func getExec(dir string) *exec.Cmd {
-	factorioExec := exec.Command(utils.GetRunPath()+dir+"/bin/x64/factorio", "--start-server", utils.GetRunPath()+dir+"/saves/" + config.FactorioSaveFileName)
+	fullDir := "." + dir + "/bin/x64/factorio"
+	fmt.Println(fullDir)
+	factorioExec := exec.Command(fullDir, "--start-server", utils.GetRunPath()+dir+"/saves/" + config.FactorioSaveFileName)
 	return factorioExec
 }
