@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/modmuss50/FactorioWrapper/utils"
+	"github.com/modmuss50/FactorioWrapper/config"
 	"os"
 	"os/exec"
 	"time"
@@ -11,21 +12,17 @@ import (
 	"log"
 	"strings"
 	"syscall"
-
-)
-
-var (
-	TextInput io.WriteCloser
 )
 
 func main() {
 	fmt.Println("Starting wrapper")
 
+	config.LoadConfig()
+
 	dataDir := "./data/"
-	version := "0.15.4"
+	version := config.FactorioVersion
 	tarBal := fmt.Sprintf("%vfactorio_headless_x64_%v.tar.xz", dataDir, version)
 	gameDir := dataDir
-	tokenFile := dataDir + "token.txt"
 	proccessDir := "/FactorioWrapper/data/factorio"
 
 	if !utils.FileExists(dataDir) || ! utils.FileExists(tarBal) {
@@ -39,8 +36,7 @@ func main() {
 
 	factorioProcess := getExec(proccessDir)
 	factorioInput, err := factorioProcess.StdinPipe()
-	TextInput = factorioInput
-	utils.TextInput = factorioInput;
+	utils.TextInput = factorioInput
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,33 +47,32 @@ func main() {
 	go func() {
 		for scanner.Scan() {
 			text := scanner.Text()
-			if strings.Contains(text, "ping"){
+			if strings.Contains(text, "ping") {
 				io.WriteString(factorioInput, "Pong!\n")
 			}
-			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)"){
-				utils.LoadDiscord(tokenFile)
-				utils.SendStringToDiscord("Server started on factorio version " + version)
+			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)") {
+				utils.LoadDiscord(config.DiscordToken)
+				utils.SendStringToDiscord("Server started on factorio version " + version, config.DiscordChannel)
 			}
-			if strings.Contains(text, "[JOIN]"){
-				utils.SendStringToDiscord(text[26:])
+			if strings.Contains(text, "[JOIN]") {
+				utils.SendStringToDiscord(text[26:], config.DiscordChannel)
 			}
-			if strings.Contains(text, "[CHAT]"){
-				if !strings.Contains(text, " [CHAT] <server>:"){
-					utils.SendStringToDiscord(text[26:])
+			if strings.Contains(text, "[CHAT]") {
+				if !strings.Contains(text, " [CHAT] <server>:") {
+					utils.SendStringToDiscord(text[26:], config.DiscordChannel)
 				}
 			}
-			if strings.Contains(text, "[LEAVE]"){
-				utils.SendStringToDiscord(text[27:])
+			if strings.Contains(text, "[LEAVE]") {
+				utils.SendStringToDiscord(text[27:], config.DiscordChannel)
 			}
-			if strings.Contains(text, "Goodbye"){
-				utils.SendStringToDiscord("Server closed")
+			if strings.Contains(text, "Goodbye") {
+				utils.SendStringToDiscord("Server closed", config.DiscordChannel)
 				utils.DiscordClient.Close()
 				os.Exit(0)
 			}
 			fmt.Printf("\t > %s\n", text)
 		}
 	}()
-
 
 	factorioProcess.Start()
 
@@ -110,6 +105,6 @@ func readInput(cmd *exec.Cmd) {
 }
 
 func getExec(dir string) *exec.Cmd {
-	factorioExec := exec.Command( utils.GetRunPath() + dir + "/bin/x64/factorio", "--start-server", utils.GetRunPath() + dir + "/saves/test.zip")
+	factorioExec := exec.Command(utils.GetRunPath()+dir+"/bin/x64/factorio", "--start-server", utils.GetRunPath()+dir+"/saves/" + config.FactorioSaveFileName)
 	return factorioExec
 }

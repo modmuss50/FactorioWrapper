@@ -15,8 +15,8 @@ var (
 )
 
 //https://discordapp.com/oauth2/authorize?client_id=308269172314603520&scope=bot&permissions=0
-func LoadDiscord(tokenFile string) {
-	Token = getToken(tokenFile)
+func LoadDiscord(token string) {
+	Token = token
 	dg, err := discordgo.New("Bot " + Token)
 	DiscordClient = dg
 	if err != nil {
@@ -50,10 +50,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	io.WriteString(TextInput, "<" + m.Author.Username + "> " + m.Content + "\n")
 }
 
-func SendStringToDiscord(message string){
-	DiscordClient.ChannelMessageSend("308269605195874314", message)
-}
-
-func getToken(tokenFile string) string {
-	return ReadStringFromFile(tokenFile)
+func SendStringToDiscord(message string, channelID string){
+	DiscordClient.ChannelMessageSend(channelID, message)
 }
