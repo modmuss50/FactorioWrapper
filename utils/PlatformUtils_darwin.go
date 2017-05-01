@@ -10,7 +10,7 @@ func KillProcess(cmd *exec.Cmd){
 	syscall.Kill(cmd.Process.Pid, syscall.SIGINT)
 }
 
-func HandleDownload(){
+func HandleDownload(dataDir string, version string){
 
 }
 
