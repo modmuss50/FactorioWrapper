@@ -18,5 +18,5 @@ golang {
         build 'github.com/cavaliercoder/grab'
         build 'github.com/mholt/archiver'
     }
-    platforms = System.getProperty("platforms", "linux-amd64")
+    platforms = System.getProperty("platforms", "linux-amd64,linux-386,windows-amd64,windows-386,darwin-amd64")
 }

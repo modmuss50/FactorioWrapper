@@ -5,13 +5,12 @@ import (
 	"github.com/modmuss50/FactorioWrapper/utils"
 	"github.com/modmuss50/FactorioWrapper/config"
 	"os"
-	"os/exec"
 	"bufio"
 	"io"
 	"log"
 	"strings"
-	"syscall"
 	"time"
+	"os/exec"
 )
 
 var (
@@ -127,7 +126,7 @@ func readInput(cmd *exec.Cmd) {
 	text, _ := reader.ReadString('\n')
 	if strings.HasPrefix(text, "stop") {
 		fmt.Println("Stopping server...")
-		syscall.Kill(cmd.Process.Pid, syscall.SIGINT)
+		utils.KillProcess(cmd)
 
 	}
 	if strings.HasPrefix(text, "fstop") {
@@ -147,6 +146,9 @@ func readInput(cmd *exec.Cmd) {
 
 	readInput(cmd)
 }
+
+
+
 
 func getExec(dir string) *exec.Cmd {
 	fullDir := "./bin/x64/factorio"
