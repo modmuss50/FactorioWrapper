@@ -30,34 +30,13 @@ func main() {
 	fmt.Println("Loading config")
 	config.LoadConfig()
 
-
 	version := config.FactorioVersion
-	tarBal := fmt.Sprintf("%vfactorio_headless_x64_%v.tar.xz", dataDir, version)
-	gameDir := dataDir
-	proccessDir := "/data/factorio"
+	processDir := utils.GetProcessDir(version)
 
-	if !utils.FileExists(dataDir) || ! utils.FileExists(tarBal) {
-		utils.MakeDir(dataDir)
-		if !utils.DownloadURL(fmt.Sprintf("https://www.factorio.com/get-download/%v/headless/linux64", version), tarBal) {
-			fmt.Println("Failed to download")
-			os.Exit(1)
-		}
-
-		delDir := gameDir + "bin/"
-		if utils.FileExists(delDir){
-			utils.DeleteDir(delDir)
-		}
-		delDir = gameDir + "data/"
-		if utils.FileExists(delDir){
-			utils.DeleteDir(delDir)
-		}
-
-		utils.ExtractTarXZ(tarBal, gameDir)
-		fmt.Println("Done.")
-	}
+	utils.HandleDownload(dataDir, version)
 
 	fmt.Println("Starting game...")
-	factorioProcess := getExec(proccessDir)
+	factorioProcess := getExec(processDir)
 	fmt.Println("Getting input for game")
 	factorioInput, err := factorioProcess.StdinPipe()
 	input = factorioInput
@@ -151,9 +130,10 @@ func readInput(cmd *exec.Cmd) {
 
 
 func getExec(dir string) *exec.Cmd {
-	fullDir := "./bin/x64/factorio"
+	fullDir := utils.GetBinPath()
+	fullDir = utils.FormatPath(fullDir)
 	fmt.Println(fullDir)
-	factorioExec := exec.Command(fullDir, "--start-server",   "./saves/" + config.FactorioSaveFileName)
+	factorioExec := exec.Command(fullDir, "--start-server", "./saves/" + config.FactorioSaveFileName)
 	factorioExec.Dir = "." + dir
 	return factorioExec
 }

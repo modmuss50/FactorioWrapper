@@ -17,7 +17,7 @@ var (
 var DefaultConfig = []byte(`
 
 [factorio]
-version = "0.15.4"
+version = "0.15.5"
 save = "world.zip"
 
 [discord]

@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"errors"
+	"strings"
 )
 
 //ReadStringFromFile reads a string from a file
@@ -95,4 +96,8 @@ func DeleteDir(dir string) error {
 		}
 	}
 	return nil
+}
+
+func FormatPath(path string) string {
+	return strings.Replace(path, "/", string(os.PathSeparator), -1)
 }
