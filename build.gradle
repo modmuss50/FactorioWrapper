@@ -19,7 +19,7 @@ golang {
         build 'github.com/mholt/archiver'
     }
     build {
-        outputFilenamePattern = './build/out/FactorioWrapper-%{platform}-' + version + '%{extension}'
+        outputFilenamePattern = 'build/out/FactorioWrapper-%{platform}-' + version + '%{extension}'
         excludes = ['.git/**', 'build.gradle', 'build/**', '.gradle/**', 'gradle/**', 'data/**', '.gitignore', '.gradlew', '.gradlew.bat', 'README.md']
     }
     toolchain {
