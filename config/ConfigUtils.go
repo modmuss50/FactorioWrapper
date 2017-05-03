@@ -12,6 +12,7 @@ var (
 	FactorioSaveFileName string
 	DiscordToken   string
 	DiscordChannel string
+	DiscordAdmin string
 )
 
 var DefaultConfig = []byte(`
@@ -42,7 +43,7 @@ func LoadConfig() {
 		FactorioSaveFileName = viper.GetString("factorio.save")
 		DiscordToken = viper.GetString("discord.token")
 		DiscordChannel = viper.GetString("discord.channelID")
-		DiscordChannel = viper.GetString("discord.commanderRole")
+		DiscordAdmin = viper.GetString("discord.commanderRole")
 
 	}
 }

@@ -141,7 +141,7 @@ func readInput(cmd *exec.Cmd) {
 		io.WriteString(input, strings.Replace(text, "cmd ", "", -1))
 	}
 	if !ranCmd {
-		fmt.Println("Command not found!")
+		fmt.Println("Command not found!: " + text)
 	}
 
 	readInput(cmd)

@@ -83,7 +83,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func SendStringToDiscord(message string, channelID string){
-	if ! Connected {
+	if DiscordClient == nil {
 		return
 	}
 
