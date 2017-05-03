@@ -18,6 +18,8 @@ var (
 	RXMentions *regexp.Regexp
 	RXUserID *regexp.Regexp
 	ChannelID string
+	RequestRestart bool
+	DiscordAdmin string
 )
 
 //https://discordapp.com/oauth2/authorize?client_id=308269172314603520&scope=bot&permissions=0
@@ -73,8 +75,10 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.HasPrefix(m.Content, "!restart"){
-		if DoesUserHaveRole(m.ChannelID, m.Author.ID, "Bot Admin") {
-			fmt.Println("Server can be restarted here")
+		if DoesUserHaveRole(m.ChannelID, m.Author.ID, DiscordAdmin) {
+			RequestRestart = true
+		} else {
+			DiscordClient.ChannelMessageSend(ChannelID, "Do you not have permission to do that!")
 		}
 	}
 

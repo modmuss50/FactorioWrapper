@@ -39,6 +39,7 @@ func main() {
 	utils.HandleDownload(dataDir, version)
 
 	fmt.Println("Connecting to discord")
+	utils.DiscordAdmin = config.DiscordAdmin
 	utils.LoadDiscord(config.DiscordToken)
 
 	//Generates a blank world is one doesnt exist
@@ -62,12 +63,16 @@ func main() {
 
 	startGame(processDir, version)
 
-	//ticker := time.NewTicker(time.Second * 10)
-	//go func() {
-	//	for range ticker.C {
-	//		//io.WriteString(factorioInput, "hello is this working?\n")
-	//	}
-	//}()
+	ticker := time.NewTicker(time.Second * 2)
+	go func() {
+		for range ticker.C {
+			if utils.RequestRestart {
+				utils.RequestRestart = false
+				RequestRestart()
+			}
+
+		}
+	}()
 
 	readInput()
 
@@ -181,7 +186,6 @@ func SendGloabMessage(message string){
 	io.WriteString(input, message + "\n")
 	utils.SendStringToDiscord(message, config.DiscordChannel)
 }
-
 
 func RequestRestart(){
 	SendGloabMessage("Server Restarting in 30 seconds")
