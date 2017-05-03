@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 	"os/exec"
-	"strconv"
 )
 
 var (
 	input io.WriteCloser
 	FactorioProcess *exec.Cmd
 	ScheduleRestart bool
+	StartTime time.Time
 )
 
 
@@ -102,7 +102,8 @@ func startGame(processDir string, version string) *exec.Cmd {
 			fmt.Printf("\t > %s\n", text)
 			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)") {
 				utils.ChannelID = config.DiscordChannel
-				utils.SendStringToDiscord("Server started on factorio version " + version, config.DiscordChannel)
+
+				utils.SendStringToDiscord("Server started on factorio version " + version + " in " + time.Now().Sub(StartTime).String(), config.DiscordChannel)
 			} else
 			if strings.Contains(text, "changing state from(CreatingGame) to(InitializationFailed)") || strings.Contains(text, "Couldn't acquire exclusive lock for") {
 				fmt.Println("Game failed to start")
@@ -130,6 +131,9 @@ func startGame(processDir string, version string) *exec.Cmd {
 					os.Exit(0)
 				}
 
+			}
+			if strings.Contains(text, "0.000") {
+				StartTime = time.Now()
 			}
 		}
 	}()
@@ -191,11 +195,9 @@ func RequestRestart(){
 	SendGloabMessage("Server Restarting in 30 seconds")
 	time.Sleep(15 * time.Second)
 	SendGloabMessage("Server Restarting in 15 seconds")
+	time.Sleep(10 * time.Second)
+	SendGloabMessage("Server Restarting in 5 seconds!")
 	time.Sleep(5 * time.Second)
-	for i:= 10; i>0 ; i--{
-		SendGloabMessage("Server Restarting in " + strconv.Itoa(i) +" seconds!")
-		time.Sleep(time.Second)
-	}
 	RequestInstantRestart()
 }
 
