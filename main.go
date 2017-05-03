@@ -35,9 +35,31 @@ func main() {
 
 	utils.HandleDownload(dataDir, version)
 
+	fmt.Println("Connecting to discord")
+	utils.LoadDiscord(config.DiscordToken)
+
+	//Generates a blank world is one doesnt exist
+	if(!doesSaveExist(processDir)){
+		fmt.Println("Generating world...")
+		factorioProcess := getExec(processDir, "--create")
+		factorioOutput, _ := factorioProcess.StdoutPipe()
+		scanner := bufio.NewScanner(factorioOutput)
+		go func() {
+			for scanner.Scan() {
+				text := scanner.Text()
+				fmt.Printf("\t > %s\n", text)
+			}
+		}()
+		factorioProcess.Start()
+		factorioProcess.Wait()
+		fmt.Println("Done")
+		os.Exit(1)
+	}
+
+
 	fmt.Println("Starting game...")
-	factorioProcess := getExec(processDir)
-	fmt.Println("Getting input for game")
+	factorioProcess := getExec(processDir, "--start-server")
+
 	factorioInput, err := factorioProcess.StdinPipe()
 	input = factorioInput
 	utils.TextInput = factorioInput
@@ -54,7 +76,6 @@ func main() {
 			text := scanner.Text()
 			fmt.Printf("\t > %s\n", text)
 			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)") {
-				utils.LoadDiscord(config.DiscordToken)
 				utils.ChannelID = config.DiscordChannel
 				utils.SendStringToDiscord("Server started on factorio version " + version, config.DiscordChannel)
 			}
@@ -129,11 +150,15 @@ func readInput(cmd *exec.Cmd) {
 
 
 
-func getExec(dir string) *exec.Cmd {
+func getExec(dir string, mode string) *exec.Cmd {
 	fullDir := utils.GetBinPath()
 	fullDir = utils.FormatPath(fullDir)
-	fmt.Println(fullDir)
-	factorioExec := exec.Command(fullDir, "--start-server", "./saves/" + config.FactorioSaveFileName)
+	factorioExec := exec.Command(fullDir, mode, "./saves/" + config.FactorioSaveFileName)
 	factorioExec.Dir = "." + dir
 	return factorioExec
+}
+
+
+func doesSaveExist(dir string) bool {
+	return utils.FileExists("." + dir + "/saves/" + config.FactorioSaveFileName)
 }
