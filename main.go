@@ -11,10 +11,13 @@ import (
 	"strings"
 	"time"
 	"os/exec"
+	"strconv"
 )
 
 var (
 	input io.WriteCloser
+	FactorioProcess *exec.Cmd
+	ScheduleRestart bool
 )
 
 
@@ -57,6 +60,23 @@ func main() {
 	}
 
 
+	startGame(processDir, version)
+
+	//ticker := time.NewTicker(time.Second * 10)
+	//go func() {
+	//	for range ticker.C {
+	//		//io.WriteString(factorioInput, "hello is this working?\n")
+	//	}
+	//}()
+
+	readInput()
+
+}
+
+func startGame(processDir string, version string) *exec.Cmd {
+	if FactorioProcess != nil {
+		fmt.Println("Is the game allready running?")
+	}
 	fmt.Println("Starting game...")
 	factorioProcess := getExec(processDir, "--start-server")
 
@@ -78,27 +98,33 @@ func main() {
 			if strings.Contains(text, "changing state from(CreatingGame) to(InGame)") {
 				utils.ChannelID = config.DiscordChannel
 				utils.SendStringToDiscord("Server started on factorio version " + version, config.DiscordChannel)
-			}
+			} else
 			if strings.Contains(text, "changing state from(CreatingGame) to(InitializationFailed)") || strings.Contains(text, "Couldn't acquire exclusive lock for") {
 				fmt.Println("Game failed to start")
+				fmt.Println("Is a server allready running? Check Task Manager")
 				factorioProcess.Process.Kill()
 				os.Exit(1)
-			}
+			} else
 			if strings.Contains(text, "[JOIN]") {
 				utils.SendStringToDiscord(text[26:], config.DiscordChannel)
-			}
+			} else
 			if strings.Contains(text, "[CHAT]") {
 				if !strings.Contains(text, " [CHAT] <server>:") {
 					utils.SendStringToDiscord(text[26:], config.DiscordChannel)
 				}
-			}
+			} else
 			if strings.Contains(text, "[LEAVE]") {
 				utils.SendStringToDiscord(text[27:], config.DiscordChannel)
-			}
+			} else
 			if strings.Contains(text, "Goodbye") {
-				utils.SendStringToDiscord("Server closed", config.DiscordChannel)
-				time.Sleep(1 * time.Second)
-				os.Exit(0)
+				if ScheduleRestart {
+					handleRestart(processDir, version)
+				} else {
+					utils.SendStringToDiscord("Server closed", config.DiscordChannel)
+					time.Sleep(1 * time.Second)
+					os.Exit(0)
+				}
+
 			}
 		}
 	}()
@@ -109,29 +135,23 @@ func main() {
 		log.Fatal(er)
 		os.Exit(1)
 	}
-
-	//ticker := time.NewTicker(time.Second * 10)
-	//go func() {
-	//	for range ticker.C {
-	//		//io.WriteString(factorioInput, "hello is this working?\n")
-	//	}
-	//}()
-
-	readInput(factorioProcess)
-
+	FactorioProcess = factorioProcess
+	return factorioProcess
 }
 
-func readInput(cmd *exec.Cmd) {
+func readInput() {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	if strings.HasPrefix(text, "stop") {
 		fmt.Println("Stopping server...")
-		utils.KillProcess(cmd)
+		utils.KillProcess(FactorioProcess)
+		FactorioProcess = nil
 
 	}
 	if strings.HasPrefix(text, "fstop") {
 		fmt.Println("Stopping server")
-		cmd.Process.Kill()
+		FactorioProcess.Process.Kill()
+		FactorioProcess = nil
 		return
 	}
 
@@ -139,16 +159,54 @@ func readInput(cmd *exec.Cmd) {
 	if strings.HasPrefix(text, "cmd") {
 		ranCmd = true
 		io.WriteString(input, strings.Replace(text, "cmd ", "", -1))
+	} else
+	if strings.HasPrefix(text, "restartnow") {
+		ranCmd = true
+		RequestInstantRestart()
+	} else
+	if strings.HasPrefix(text, "restart") {
+		ranCmd = true
+		RequestRestart()
 	}
+
 	if !ranCmd {
 		fmt.Println("Command not found!: " + text)
 	}
 
-	readInput(cmd)
+	readInput()
+}
+
+func SendGloabMessage(message string){
+	fmt.Println(message)
+	io.WriteString(input, message + "\n")
+	utils.SendStringToDiscord(message, config.DiscordChannel)
 }
 
 
+func RequestRestart(){
+	SendGloabMessage("Server Restarting in 30 seconds")
+	time.Sleep(15 * time.Second)
+	SendGloabMessage("Server Restarting in 15 seconds")
+	time.Sleep(5 * time.Second)
+	for i:= 10; i>0 ; i--{
+		SendGloabMessage("Server Restarting in " + strconv.Itoa(i) +" seconds!")
+		time.Sleep(time.Second)
+	}
+	RequestInstantRestart()
+}
 
+func RequestInstantRestart(){
+	fmt.Println("Restarting server...")
+	utils.SendStringToDiscord("Server restarting...", config.DiscordChannel)
+	ScheduleRestart = true
+	utils.KillProcess(FactorioProcess)
+}
+
+func handleRestart(processDir string, version string) {
+	ScheduleRestart = false
+	fmt.Println("Restating game")
+	FactorioProcess = startGame(processDir, version)
+}
 
 func getExec(dir string, mode string) *exec.Cmd {
 	fullDir := utils.GetBinPath()
